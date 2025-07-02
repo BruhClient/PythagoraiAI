@@ -1,4 +1,6 @@
-import Logo from "@/components/Logo";
+import Logo from "@/components/common/Logo";
+import { Rating } from "@/components/common/Ratings";
+import UserAvatar from "@/components/common/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { sendVerificationEmail } from "@/server/actions/auth/mail";
 import {
@@ -19,7 +21,6 @@ const page = async ({
 }) => {
   const filters = await searchParams;
   const token = filters.token ?? "";
-  console.log(token);
 
   if (!token) {
     redirect("/");
@@ -67,12 +68,29 @@ const page = async ({
             </Button>
           </div>
         </div>
-        <div className="hidden lg:block lg:w-[60vw] bg-muted">
-          <img
-            src="/hero-image.jpg"
-            alt="Login Hero"
-            className="w-full h-full object-cover"
-          />
+        <div className="lg:flex lg:w-[60vw] h-screen hidden justify-center items-center px-3 ">
+          <div className="flex flex-col gap-2">
+            <div className="font-bold text-4xl text-muted-foreground leading-3">
+              "
+            </div>
+            <div className="text-3xl font-bold max-w-[800px] text-bold">
+              This is my new secret weapon for exams. I’ve recommended it to
+              everyone in my study group.
+            </div>
+            <div className="font-bold text-4xl text-muted-foreground leading-3 pt-2 self-end">
+              "
+            </div>
+            <div className="self-start">
+              <div className="flex gap-2 items-center">
+                <UserAvatar imageUrl="/default.png" />
+
+                <div className="text-lg font-bold">Grace W.</div>
+                <div>
+                  <Rating value={4} readOnly />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div className="absolute top-4 left-4">
           <Logo />

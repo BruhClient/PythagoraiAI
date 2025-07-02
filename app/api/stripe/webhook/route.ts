@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { format } from "date-fns";
+import { getUserByEmail, updateUserById } from "@/server/db/users";
 async function getRawBody(
   readable: ReadableStream<Uint8Array>
 ): Promise<Buffer> {
@@ -47,29 +48,27 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (eventType) {
-      case "checkout.session.completed": {
-      }
-      case "invoice.paid": {
-        const {
-          customer_email,
-          hosted_invoice_url,
-          amount_paid,
-          id,
+      case "payment_intent.succeeded": {
+        const { amount, metadata, id } = event.data
+          .object as Stripe.PaymentIntent;
 
-          customer_name,
-          metadata,
-        } = event.data.object as Stripe.Invoice;
+        const { email, gems, userId } = metadata;
 
-        const planType = metadata!.plan;
+        const existingUser = await getUserByEmail(email);
 
+        if (!existingUser) {
+          throw Error("User not found");
+        }
+        await updateUserById(userId, {
+          gems: existingUser!.gems + parseInt(gems),
+        });
         await sendPaymentConfirmationEmail(
-          customer_email!,
-          customer_name ?? "Customer",
+          email,
+          existingUser.name ?? "Customer",
           id!,
-          amount_paid / 100,
+          amount / 100,
           format(Date.now(), "dd MMM yyyy"),
-          hosted_invoice_url!,
-          planType!
+          parseInt(gems)
         );
       }
     }

@@ -12,7 +12,6 @@ const domain = process.env.NEXT_PUBLIC_VERCEL_URL;
 export const sendVerificationEmail = async (email: string, token: string) => {
   const confirmLink = `${domain}/account-verification?token=${token}`;
 
-  console.log(confirmLink);
   try {
     await resend.emails.send({
       from: "mail@quizpdf.net",
@@ -56,8 +55,7 @@ export const sendPaymentConfirmationEmail = async (
   invoiceNumber: string,
   amountPaid: number,
   paymentDate: string,
-  receiptUrl: string,
-  planType: string
+  gems: number
 ) => {
   try {
     await resend.emails.send({
@@ -67,10 +65,9 @@ export const sendPaymentConfirmationEmail = async (
       react: PaymentConfirmationEmail({
         customerName,
         invoiceNumber,
-        planType,
         amountPaid,
         paymentDate,
-        receiptUrl,
+        gems,
       }),
     });
     return {

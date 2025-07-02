@@ -9,27 +9,21 @@ import {
 } from "@/components/ui/sheet";
 import { usePaymentSheet } from "@/context/payment-sheet-context";
 import { createCheckout } from "@/server/actions/stripe";
-import {
-  EmbeddedCheckout,
-  EmbeddedCheckoutProvider,
-} from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-import { useEffect, useState } from "react";
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
+import { useEffect, useState } from "react";
+import CheckoutPage from "./CheckoutPage";
 
 export function PaymentSheet() {
-  const { isOpen, close, priceId } = usePaymentSheet();
+  const { isOpen, close, amount, gems } = usePaymentSheet();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isOpen || !priceId) return;
+    if (!isOpen || !amount) return;
 
     const getClientSecret = async () => {
+      setClientSecret(null);
       try {
-        const secret = await createCheckout({ priceId });
+        const secret = await createCheckout({ amount, gems });
         setClientSecret(secret);
       } catch (err) {
         console.error("Failed to fetch client secret:", err);
@@ -37,27 +31,23 @@ export function PaymentSheet() {
     };
 
     getClientSecret();
-  }, [isOpen, priceId]);
+  }, [isOpen, amount]);
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && close()}>
-      <SheetContent side="right" className="p-0 max-w-md w-full">
+      <SheetContent side="right" className="p-2 max-w-md w-full">
         <SheetHeader className="p-4 border-b">
           <SheetTitle>Complete your payment</SheetTitle>
           <SheetDescription></SheetDescription>
         </SheetHeader>
-        <div id="checkout" className="h-full overflow-auto p-4">
-          {clientSecret && (
-            <EmbeddedCheckoutProvider
-              key={clientSecret}
-              stripe={stripePromise}
-              //@ts-ignore
-              options={{ clientSecret }}
-            >
-              <EmbeddedCheckout />
-            </EmbeddedCheckoutProvider>
-          )}
-        </div>
+
+        {clientSecret ? (
+          <CheckoutPage key={clientSecret} clientSecret={clientSecret} />
+        ) : (
+          <div className="text-muted-foreground text-sm w-full h-full flex justify-center py-5">
+            loading...
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );

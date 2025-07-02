@@ -13,6 +13,7 @@ export const env = createEnv({
     UPLOADTHING_TOKEN: z.string(),
     STRIPE_WEBHOOK_SECRET: z.string(),
     STRIPE_SECRET_KEY: z.string(),
+    OPENAI_API_KEY: z.string(),
   },
   experimental__runtimeEnv: process.env,
 });

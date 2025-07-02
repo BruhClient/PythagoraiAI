@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CircleAlert } from "lucide-react";
+import { CircleAlert, Edit } from "lucide-react";
 import { MotionDiv } from "@/components/Motion";
 import { containerVariants } from "@/lib/variants";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -89,8 +89,8 @@ const UpdateUsernameButton = ({
           )}
         />
 
-        <Button className="h-full" disabled={isPending}>
-          Update
+        <Button variant={"outline"} size={"icon"} disabled={isPending}>
+          <Edit />
         </Button>
       </form>
     </Form>

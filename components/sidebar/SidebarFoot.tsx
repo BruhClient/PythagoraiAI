@@ -16,6 +16,7 @@ import useSessionUser from "@/hooks/use-session-user";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { signOut } from "next-auth/react";
 import { DEFAULT_ROUTE } from "@/routes";
+import Link from "next/link";
 const SidebarFoot = () => {
   const user = useSessionUser();
   return (
@@ -43,12 +44,10 @@ const SidebarFoot = () => {
               side="top"
               className="w-[var(--radix-popper-anchor-width)]"
             >
-              <DropdownMenuItem>
-                <span>Account</span>
+              <DropdownMenuItem asChild>
+                <Link href={"/settings"}>Account</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <span>Billing</span>
-              </DropdownMenuItem>
+
               <DropdownMenuItem
                 onClick={() => {
                   signOut({ callbackUrl: DEFAULT_ROUTE });

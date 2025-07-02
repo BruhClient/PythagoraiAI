@@ -6,7 +6,6 @@ import { db } from "@/db";
 import { accounts, sessions, users, verificationTokens } from "@/db/schema";
 import { getUserById, updateUserById } from "@/server/db/users";
 import providers from "./providers";
-import { PricingPlanName } from "@/data/pricingPlans";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: DrizzleAdapter(db, {
     usersTable: users,
@@ -53,7 +52,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         isOauth: user?.isOauth,
         image: user?.image,
         email: user?.email,
-        plan: user?.plan,
+        gems: user?.gems,
       };
     },
     async session({ session, token }) {
@@ -62,7 +61,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.isOauth = token.isOauth as boolean;
         session.user.name = token.name as string;
-        session.user.plan = token.plan as PricingPlanName;
+        session.user.gems = token.gems as number;
       }
       return session;
     },

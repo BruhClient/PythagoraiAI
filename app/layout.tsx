@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-import AppProvider from "@/components/AppProvider";
+import AppProvider from "@/components/provider/AppProvider";
 import { PaymentSheet } from "@/components/pricing/PaymentSheet";
 const sans = Manrope({
   variable: "--font-sans",
@@ -25,16 +25,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <AppProvider>
-        <body
-          className={`${sans.variable} ${serif.variable} font-sans antialiased`}
-        >
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${sans.variable} ${serif.variable} font-sans antialiased`}
+      >
+        <AppProvider>
           {children}
+          <div className="fixed inset-0 -z-10 h-full w-full  bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]"></div>
           <Toaster />
+
           <PaymentSheet />
-        </body>
-      </AppProvider>
+        </AppProvider>
+      </body>
     </html>
   );
 }

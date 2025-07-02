@@ -5,6 +5,22 @@ import { UploadThingError } from "uploadthing/server";
 const f = createUploadthing();
 
 export const ourFileRouter = {
+  pdfUploader: f({ pdf: { maxFileSize: "32MB" } })
+    .middleware(async ({ req }) => {
+      //get user info
+      const session = await auth();
+
+      if (!session) throw new UploadThingError("Unauthorized");
+
+      return { userId: session.user.id };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      return {
+        userId: metadata.userId,
+        fileUrl: file.url,
+        fileName: file.name,
+      };
+    }),
   imageUploader: f({
     image: {
       maxFileSize: "4MB",

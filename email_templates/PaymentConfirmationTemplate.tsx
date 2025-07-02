@@ -16,8 +16,7 @@ interface PaymentConfirmationEmailProps {
   invoiceNumber: string;
   amountPaid: number;
   paymentDate: string;
-  receiptUrl: string;
-  planType: string; // <-- Added planType
+  gems: number;
 }
 
 export function PaymentConfirmationEmail({
@@ -25,8 +24,7 @@ export function PaymentConfirmationEmail({
   invoiceNumber,
   amountPaid,
   paymentDate,
-  receiptUrl,
-  planType,
+  gems,
 }: PaymentConfirmationEmailProps) {
   return (
     <Html>
@@ -54,9 +52,6 @@ export function PaymentConfirmationEmail({
               Hi {customerName},
             </Text>
             <Text style={{ fontSize: "16px", color: "#555" }}>
-              Thank you for subscribing to the <strong>{planType}</strong> plan.
-            </Text>
-            <Text style={{ fontSize: "16px", color: "#555" }}>
               We have received your payment for invoice{" "}
               <strong>{invoiceNumber}</strong>.
             </Text>
@@ -66,24 +61,13 @@ export function PaymentConfirmationEmail({
               Payment Date: <strong>{paymentDate}</strong>
             </Text>
             <Text style={{ fontSize: "16px", color: "#555" }}>
-              You can view your receipt here:
+              You bought {gems} AI PDF Generation Gems .
             </Text>
-            <Link
-              href={receiptUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: "#346df1",
-                fontWeight: "bold",
-                textDecoration: "none",
-              }}
-            >
-              View Receipt
-            </Link>
+
             <Text
               style={{ fontSize: "16px", color: "#555", marginTop: "20px" }}
             >
-              Thank you for your business!
+              Thank you for supporting us !
             </Text>
           </Section>
         </Container>

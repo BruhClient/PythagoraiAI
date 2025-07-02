@@ -3,7 +3,7 @@
 import React from "react";
 
 import useSessionUser from "@/hooks/use-session-user";
-import UserAvatar from "../UserAvatar";
+import UserAvatar from "../common/UserAvatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
