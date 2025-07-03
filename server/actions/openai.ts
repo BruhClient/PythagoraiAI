@@ -96,7 +96,7 @@ export const addAiCards = async (flashcards: any[], deckId: string) => {
       await tx
         .update(users)
         .set({
-          gems: session.user.gems,
+          gems: session.user.gems - 1,
         })
         .where(eq(users.id, session.user.id));
 
