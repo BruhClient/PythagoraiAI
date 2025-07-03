@@ -12,9 +12,11 @@ import Masonry from "react-masonry-css";
 import { breakpointColumnsObj } from "@/data/constants";
 import FeedLoader from "@/components/FeedLoader";
 const CardFeed = ({ deckId }: { deckId: string }) => {
-  const { cards, fetchNextPage, hasNextPage, isFetching } = useCards({
-    deckId,
-  });
+  const { cards, fetchNextPage, hasNextPage, isFetching, isFetched } = useCards(
+    {
+      deckId,
+    }
+  );
 
   const lastFolderRef = useRef(null);
   const { ref, entry } = useIntersection({
@@ -67,7 +69,7 @@ const CardFeed = ({ deckId }: { deckId: string }) => {
       </Masonry>
       {hasNextPage && <FeedLoader />}
 
-      {!isFetching && cards.length === 0 && (
+      {isFetched && cards.length === 0 && (
         <div className="w-full flex justify-center items-center h-[70vh] flex-col gap-3">
           <Upload size={70} />
           <div className="text-2xl font-bold ">You have no cards</div>

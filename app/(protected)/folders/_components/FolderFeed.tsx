@@ -12,7 +12,8 @@ import Masonry from "react-masonry-css";
 import { breakpointColumnsObj } from "@/data/constants";
 import FeedLoader from "@/components/FeedLoader";
 const FolderFeed = () => {
-  const { folders, fetchNextPage, hasNextPage, isFetching } = useFolders();
+  const { folders, fetchNextPage, hasNextPage, isFetching, isFetched } =
+    useFolders();
 
   const lastFolderRef = useRef(null);
   const { ref, entry } = useIntersection({
@@ -67,7 +68,7 @@ const FolderFeed = () => {
       </Masonry>
 
       {hasNextPage && <FeedLoader />}
-      {!isFetching && folders.length === 0 && (
+      {isFetched && folders.length === 0 && (
         <div className="w-full flex justify-center items-center h-[70vh] flex-col gap-3">
           <Upload size={70} />
           <div className="text-2xl font-bold ">You have no folders</div>

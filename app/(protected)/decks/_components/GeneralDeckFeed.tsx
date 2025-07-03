@@ -10,7 +10,8 @@ import DeckCard from "@/components/cards/DeckCard";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 const GeneralDeckFeed = () => {
-  const { decks, fetchNextPage, hasNextPage, isFetching } = useAllDecks();
+  const { decks, fetchNextPage, hasNextPage, isFetching, isFetched } =
+    useAllDecks();
 
   const lastFolderRef = useRef(null);
   const { ref, entry } = useIntersection({
@@ -48,7 +49,7 @@ const GeneralDeckFeed = () => {
       </Masonry>
 
       {hasNextPage && isFetching && <FeedLoader />}
-      {!isFetching && decks.length === 0 && (
+      {isFetched && decks.length === 0 && (
         <div className="w-full flex justify-center items-center h-[70vh] flex-col gap-3">
           <Upload size={70} />
           <div className="text-2xl font-bold ">You have no decks</div>
