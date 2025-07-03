@@ -14,9 +14,9 @@ const Demo = () => {
           url="CoachAI.com"
           className="size-full"
           imageSrc={
-            theme === "light"
-              ? "/demo/desktop-light.png"
-              : "/demo/desktop-dark.png"
+            theme === "dark"
+              ? "/demo/desktop-dark.png"
+              : "/demo/desktop-light.png"
           }
         />
       </div>
@@ -24,9 +24,9 @@ const Demo = () => {
         <Iphone15Pro
           className="size-full  self-center"
           src={
-            theme === "light"
-              ? "/demo/mobile-light.png"
-              : "/demo/mobile-dark.png"
+            theme === "dark"
+              ? "/demo/mobile-dark.png"
+              : "/demo/mobile-light.png"
           }
         />
       </div>
