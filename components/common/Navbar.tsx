@@ -34,8 +34,9 @@ const Navbar = () => {
           );
         })}
         <Button size={"icon"} variant={"outline"} asChild>
-          <Link href={"https://github.com/BruhClient/PythagoraiAI"}></Link>
-          <Github />
+          <Link href={"https://github.com/BruhClient/PythagoraiAI"}>
+            <Github />
+          </Link>
         </Button>
         <ModeToggle2 />
       </div>

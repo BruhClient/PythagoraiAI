@@ -86,9 +86,7 @@ const MainBlock = () => {
         />
       </CardContent>
       <CardFooter className="flex flex-col items-start">
-        <div className="font-bold">
-          Ai Assistant answers strictly based on your notes.
-        </div>
+        <div className="font-bold"></div>
         <div className="text-sm  text-muted-foreground">
           This is to prevent any confusion or misintepretation.
         </div>
