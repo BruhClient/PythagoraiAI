@@ -11,6 +11,7 @@ import UserAvatar from "./UserAvatar";
 import { Rating } from "./Ratings";
 import Masonry from "react-masonry-css";
 import { reviewBreakpointColumnsObj } from "@/data/constants";
+import CreateReviewForm from "../forms/ReviewForm";
 const reviews = [
   {
     name: "Alice T.",
@@ -106,6 +107,20 @@ const Reviews = () => {
           );
         })}
       </Masonry>
+      <Card className="w-full max-w-[600px]">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">
+            Let us know how you feel !
+          </CardTitle>
+          <CardDescription>
+            We appreciate any feedback . We strive to give you a better
+            experience on every update.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CreateReviewForm />
+        </CardContent>
+      </Card>
     </div>
   );
 };

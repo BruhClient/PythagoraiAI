@@ -86,9 +86,8 @@ const MainBlock = () => {
         />
       </CardContent>
       <CardFooter className="flex flex-col items-start">
-        <div className="font-bold"></div>
         <div className="text-sm  text-muted-foreground">
-          This is to prevent any confusion or misintepretation.
+          * We will be adding community features soon .
         </div>
       </CardFooter>
     </Card>

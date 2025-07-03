@@ -6,6 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Gem } from "lucide-react";
 import React, { useState } from "react";
 import { Card, CardContent } from "../ui/card";
+import Link from "next/link";
 
 const Pricing = () => {
   const [input, setInput] = useState<number[]>([50]);
@@ -52,8 +53,8 @@ const Pricing = () => {
               $0.4 for every PDF Generation . Buy 30 generations get 5 for free
               !
             </div>
-            <Button variant={"outline"} className="w-[200px]">
-              Pay ${price}
+            <Button variant={"outline"} className="w-[200px]" asChild>
+              <Link href={"/signup"}>Pay ${price}</Link>
             </Button>
           </div>
         </CardContent>
