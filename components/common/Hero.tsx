@@ -35,7 +35,7 @@ const Highlight = ({ children }: { children: React.ReactNode }) => {
 
 const Hero = () => {
   return (
-    <nav className="flex flex-col items-center justify-center gap-3 h-[60vh] relative">
+    <nav className="flex flex-col items-center justify-center gap-3 h-[60vh] relative overflow-hidden">
       <div className="absolute top-6 w-[400px] h-[400px] bg-primary rounded-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))]  opacity-20 blur-3xl z-[-1] " />
 
       <div className="flex flex-col text-center justify-center items-center gap-4">
