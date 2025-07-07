@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -39,54 +39,54 @@ const UpdateDeckForm = ({
   });
 
   const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const onSubmit = (values: CreateDeckPayload) => {
-    startTransition(() => {
-      updateDeck(id, values.title, values.color, values.icon).then((data) => {
-        if (!data) {
-          showErrorToast();
-        } else {
-          showSuccessToast();
+    setIsPending(true);
+    updateDeck(id, values.title, values.color, values.icon).then((data) => {
+      if (!data) {
+        showErrorToast();
+      } else {
+        showSuccessToast();
 
-          queryClient.setQueryData(
-            ["most practiced", data.userId],
-            (oldData: any[]) => {
-              return oldData.map((deck) => {
-                if (deck.id === data.id) {
-                  return data;
-                }
-                return deck;
-              });
-            }
-          );
-          queryClient.setQueryData(
-            ["decks", data.userId, data.folderId],
-            (oldData: any) => {
-              if (!oldData) {
-                return oldData;
+        queryClient.setQueryData(
+          ["most practiced", data.userId],
+          (oldData: any[]) => {
+            return oldData.map((deck) => {
+              if (deck.id === data.id) {
+                return data;
               }
-
-              return {
-                ...oldData,
-                pages: oldData.pages.map((page: any) => {
-                  return {
-                    ...page,
-                    decks: page.decks.map((deck: any) => {
-                      if (deck.id === id) {
-                        return {
-                          ...deck,
-                          ...data,
-                        }; // Replace with updated data
-                      }
-                      return deck;
-                    }),
-                  };
-                }),
-              };
+              return deck;
+            });
+          }
+        );
+        queryClient.setQueryData(
+          ["decks", data.userId, data.folderId],
+          (oldData: any) => {
+            if (!oldData) {
+              return oldData;
             }
-          );
-        }
-      });
+
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page: any) => {
+                return {
+                  ...page,
+                  decks: page.decks.map((deck: any) => {
+                    if (deck.id === id) {
+                      return {
+                        ...deck,
+                        ...data,
+                      }; // Replace with updated data
+                    }
+                    return deck;
+                  }),
+                };
+              }),
+            };
+          }
+        );
+      }
+      setIsPending(false);
     });
   };
 

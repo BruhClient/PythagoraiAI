@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -30,54 +30,52 @@ const CreateFolderForm = () => {
   });
 
   const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
-  const onSubmit = (values: CreateFolderPayload) => {
-    startTransition(async () => {
-      const permission = await canCreateFolder();
+  const [isPending, setIsPending] = useState(false);
+  const onSubmit = async (values: CreateFolderPayload) => {
+    setIsPending(true);
+    const permission = await canCreateFolder();
 
-      if (!permission) {
-        showErrorToast("Total folders must not exceed 20");
-      } else {
-        await createFolder(values).then((data) => {
-          if (!data) {
-            showErrorToast();
-          } else {
-            showSuccessToast();
+    if (!permission) {
+      showErrorToast("Total folders must not exceed 20");
+      setIsPending(false);
+    } else {
+      await createFolder(values).then((data) => {
+        if (!data) {
+          showErrorToast();
+        } else {
+          showSuccessToast();
 
-            queryClient.setQueryData(
-              ["folders", data.userId],
-              (oldData: any) => {
-                if (!oldData) {
-                  return {
-                    pages: [{ folders: [data], nextCursor: null }],
-                    pageParams: [null],
-                  };
-                }
+          queryClient.setQueryData(["folders", data.userId], (oldData: any) => {
+            if (!oldData) {
+              return {
+                pages: [{ folders: [data], nextCursor: null }],
+                pageParams: [null],
+              };
+            }
 
-                return {
-                  ...oldData,
-                  pages: [
+            return {
+              ...oldData,
+              pages: [
+                {
+                  ...oldData.pages[0],
+                  folders: [
                     {
-                      ...oldData.pages[0],
-                      folders: [
-                        {
-                          ...data,
-                          cardCount: 0,
-                          deckCount: 0,
-                        },
-                        ...oldData.pages[0].folders,
-                      ],
+                      ...data,
+                      cardCount: 0,
+                      deckCount: 0,
                     },
-                    ...oldData.pages.slice(1),
+                    ...oldData.pages[0].folders,
                   ],
-                };
-              }
-            );
-            form.reset();
-          }
-        });
-      }
-    });
+                },
+                ...oldData.pages.slice(1),
+              ],
+            };
+          });
+          form.reset();
+        }
+        setIsPending(false);
+      });
+    }
   };
 
   return (

@@ -20,48 +20,47 @@ const ProfilePicUploader = ({
 }) => {
   const { startUpload } = useUploadThing("imageUploader");
 
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const { update } = useSession();
 
   const [image, setImage] = useState(initialImage);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsPending(true);
     if (!e.target.files) {
       return;
     }
     const file = e.target.files[0] as File;
 
     if (file) {
-      startTransition(async () => {
-        const resp = await startUpload([file]);
+      const resp = await startUpload([file]);
 
-        if (!resp) {
-          return;
-        }
-        const { ufsUrl, key } = resp[0];
+      if (!resp) {
+        return;
+      }
+      const { ufsUrl, key } = resp[0];
 
-        const prevProfilePicKey = localStorage.getItem("profilePicKey");
+      const prevProfilePicKey = localStorage.getItem("profilePicKey");
 
-        console.log("PREV PROFILE KEY", prevProfilePicKey);
-        if (prevProfilePicKey) {
-          await deleteFileFromUploadthing(prevProfilePicKey);
-        }
-        localStorage.setItem("profilePicKey", key);
+      console.log("PREV PROFILE KEY", prevProfilePicKey);
+      if (prevProfilePicKey) {
+        await deleteFileFromUploadthing(prevProfilePicKey);
+      }
 
-        const data = await updateUserById(id, {
-          image: ufsUrl,
-        });
-
-        if (data) {
-          setImage(ufsUrl);
-          showSuccessToast("Profile Uploaded");
-        } else {
-          showErrorToast();
-        }
-
-        update();
+      const data = await updateUserById(id, {
+        image: ufsUrl,
       });
+
+      if (data) {
+        setImage(ufsUrl);
+        showSuccessToast("Profile Uploaded");
+      } else {
+        showErrorToast();
+      }
+
+      update();
+      setIsPending(false);
     }
   };
   const inputRef = useRef<HTMLInputElement | null>(null);

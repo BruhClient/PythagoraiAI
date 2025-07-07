@@ -16,7 +16,7 @@ import ActionButton from "../buttons/ActionButton";
 import { Button } from "../ui/button";
 import { Bot, Edit, Hammer, Redo, Trash, Undo } from "lucide-react";
 import { deleteCard } from "@/server/db/cards";
-import { showErrorToast } from "@/lib/toast";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import EditCardForm from "../forms/EditCardForm";
 import { MasteryBar } from "../MasteryBar";
@@ -42,7 +42,6 @@ const FlashCard = ({
   createdAt: Date;
   mastery: number;
 }) => {
-  const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
   const [flipped, setFlipped] = useState(false);
   return (
@@ -117,12 +116,11 @@ const FlashCard = ({
               for (const key of variations) {
                 removeCardFromPaginatedCache(queryClient, key, id);
               }
-              startTransition(() => {
-                deleteCard(id).then((data) => {
-                  if (!data) {
-                    showErrorToast();
-                  }
-                });
+
+              deleteCard(id).then((data) => {
+                if (!data) {
+                  showErrorToast();
+                }
               });
             }}
             variant="destructive"

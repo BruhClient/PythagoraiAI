@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -29,53 +29,54 @@ const CreateDeckForm = ({ folderId }: { folderId: string }) => {
   });
 
   const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
-  const onSubmit = (values: CreateDeckPayload) => {
-    startTransition(async () => {
-      const permission = await canCreateDeck(folderId);
+  const [isPending, setIsPending] = useState(false);
+  const onSubmit = async (values: CreateDeckPayload) => {
+    setIsPending(true);
+    const permission = await canCreateDeck(folderId);
 
-      if (!permission) {
-        showErrorToast("Folder can only contain a maximum of 20 decks");
-      } else {
-        await createDeck(folderId, values).then((data) => {
-          if (!data) {
-            showErrorToast();
-          } else {
-            showSuccessToast();
+    if (!permission) {
+      showErrorToast("Folder can only contain a maximum of 20 decks");
+      setIsPending(false);
+    } else {
+      await createDeck(folderId, values).then((data) => {
+        if (!data) {
+          showErrorToast();
+        } else {
+          showSuccessToast();
 
-            queryClient.setQueryData(
-              ["decks", data.userId, folderId],
-              (oldData: any) => {
-                if (!oldData) {
-                  return {
-                    pages: [{ decks: [data], nextCursor: null }],
-                    pageParams: [null],
-                  };
-                }
-
+          queryClient.setQueryData(
+            ["decks", data.userId, folderId],
+            (oldData: any) => {
+              if (!oldData) {
                 return {
-                  ...oldData,
-                  pages: [
-                    {
-                      ...oldData.pages[0],
-                      decks: [
-                        {
-                          ...data,
-                          cardCount: 0,
-                        },
-                        ...oldData.pages[0].decks,
-                      ],
-                    },
-                    ...oldData.pages.slice(1),
-                  ],
+                  pages: [{ decks: [data], nextCursor: null }],
+                  pageParams: [null],
                 };
               }
-            );
-            form.reset();
-          }
-        });
-      }
-    });
+
+              return {
+                ...oldData,
+                pages: [
+                  {
+                    ...oldData.pages[0],
+                    decks: [
+                      {
+                        ...data,
+                        cardCount: 0,
+                      },
+                      ...oldData.pages[0].decks,
+                    ],
+                  },
+                  ...oldData.pages.slice(1),
+                ],
+              };
+            }
+          );
+          form.reset();
+        }
+        setIsPending(false);
+      });
+    }
   };
 
   return (

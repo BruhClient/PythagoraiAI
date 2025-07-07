@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -38,40 +38,40 @@ const UpdateFolderForm = ({
   });
 
   const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const onSubmit = (values: CreateFolderPayload) => {
-    startTransition(() => {
-      updateFolder(id, values.title, values.color).then((data) => {
-        if (!data) {
-          showErrorToast();
-        } else {
-          showSuccessToast();
+    setIsPending(true);
+    updateFolder(id, values.title, values.color).then((data) => {
+      if (!data) {
+        showErrorToast();
+      } else {
+        showSuccessToast();
 
-          queryClient.setQueryData(["folders", data.userId], (oldData: any) => {
-            if (!oldData) {
-              return oldData;
-            }
+        queryClient.setQueryData(["folders", data.userId], (oldData: any) => {
+          if (!oldData) {
+            return oldData;
+          }
 
-            return {
-              ...oldData,
-              pages: oldData.pages.map((page: any) => {
-                return {
-                  ...page,
-                  folders: page.folders.map((folder: any) => {
-                    if (folder.id === id) {
-                      return {
-                        ...folder,
-                        ...data,
-                      }; // Replace with updated data
-                    }
-                    return folder;
-                  }),
-                };
-              }),
-            };
-          });
-        }
-      });
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any) => {
+              return {
+                ...page,
+                folders: page.folders.map((folder: any) => {
+                  if (folder.id === id) {
+                    return {
+                      ...folder,
+                      ...data,
+                    }; // Replace with updated data
+                  }
+                  return folder;
+                }),
+              };
+            }),
+          };
+        });
+      }
+      setIsPending(false);
     });
   };
 

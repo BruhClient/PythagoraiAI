@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { Ellipsis, Hammer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +35,7 @@ const EditDeckButton = ({
   icon: string;
 }) => {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const queryClient = useQueryClient();
   return (
     <DropdownMenu>
@@ -69,42 +69,40 @@ const EditDeckButton = ({
           dialogTitle="Are you sure?"
           dialogDescription="This will permanently delete the folder and all decks/cards inside it."
           variant="destructive"
-          onConfirm={() => {
-            startTransition(() => {
-              deleteDeck(id).then((data) => {
-                if (!data) {
-                  showErrorToast();
-                } else {
-                  queryClient.setQueryData(
-                    ["most practiced", data.userId],
-                    (oldData: any[]) => {
-                      return oldData.filter((deck) => deck.id !== data.id);
+          onConfirm={async () => {
+            setIsPending(true);
+            await deleteDeck(id).then((data) => {
+              if (!data) {
+                showErrorToast();
+              } else {
+                queryClient.setQueryData(
+                  ["most practiced", data.userId],
+                  (oldData: any[]) => {
+                    return oldData.filter((deck) => deck.id !== data.id);
+                  }
+                );
+                queryClient.setQueryData(
+                  ["decks", data.userId, data.folderId],
+                  (oldData: any) => {
+                    if (!oldData) {
+                      return oldData;
                     }
-                  );
-                  queryClient.setQueryData(
-                    ["decks", data.userId, data.folderId],
-                    (oldData: any) => {
-                      if (!oldData) {
-                        return oldData;
-                      }
 
-                      return {
-                        ...oldData,
-                        pages: oldData.pages.map((page: any) => ({
-                          ...page,
-                          decks: page.decks.filter(
-                            (item: any) => item.id !== id
-                          ),
-                        })),
-                      };
-                    }
-                  );
+                    return {
+                      ...oldData,
+                      pages: oldData.pages.map((page: any) => ({
+                        ...page,
+                        decks: page.decks.filter((item: any) => item.id !== id),
+                      })),
+                    };
+                  }
+                );
 
-                  showSuccessToast();
-                  router.push(`/folders/${data.folderId}`);
-                }
-              });
+                showSuccessToast();
+                router.push(`/folders/${data.folderId}`);
+              }
             });
+            setIsPending(false);
           }}
         >
           <DropdownMenuItem

@@ -1,6 +1,6 @@
 "use client";
 import { useLocalStorage } from "@mantine/hooks";
-import React, { useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import TextEditor from "../text-editor/TextEditor";
 import { Separator } from "../ui/separator";
 import { useSearchParams } from "next/navigation";
@@ -31,8 +31,8 @@ const CreateCardForm = () => {
     key: `back_${searchParams.get("deckId")}`,
     defaultValue: "",
   });
+  const [isPending, setIsPending] = useState(false);
 
-  const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
   return (
     <div className="max-w-[900px] w-full space-y-4">
@@ -87,31 +87,31 @@ const CreateCardForm = () => {
           if (!front || !back) {
             showErrorToast("Both Front and Back must be filled ");
           } else {
-            startTransition(() => {
-              createCard(searchParams.get("deckId")!, [{ front, back }]).then(
-                (data) => {
-                  if (!data) {
-                    showErrorToast();
-                  } else {
-                    const baseKey = ["cards", data.userId, data.deckId];
-                    const variations = [
-                      [...baseKey, null, null],
-                      [...baseKey, data.isAi ? "ai" : "human", null],
-                      [...baseKey, data.isAi ? "ai" : "human", "asc"],
+            setIsPending(true);
+            createCard(searchParams.get("deckId")!, [{ front, back }]).then(
+              (data) => {
+                if (!data) {
+                  showErrorToast();
+                } else {
+                  const baseKey = ["cards", data.userId, data.deckId];
+                  const variations = [
+                    [...baseKey, null, null],
+                    [...baseKey, data.isAi ? "ai" : "human", null],
+                    [...baseKey, data.isAi ? "ai" : "human", "asc"],
 
-                      [...baseKey, null, "asc"],
-                    ];
+                    [...baseKey, null, "asc"],
+                  ];
 
-                    for (const key of variations) {
-                      addCardsToPaginatedCache(queryClient, key, [data]);
-                    }
-                    showSuccessToast();
-                    setFront("");
-                    setBack("");
+                  for (const key of variations) {
+                    addCardsToPaginatedCache(queryClient, key, [data]);
                   }
+                  showSuccessToast();
+                  setFront("");
+                  setBack("");
                 }
-              );
-            });
+                setIsPending(false);
+              }
+            );
           }
         }}
       >

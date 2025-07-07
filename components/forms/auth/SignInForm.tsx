@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SignInPayload, SignInSchema } from "@/schemas/auth/signin";
@@ -34,22 +34,22 @@ const SignInForm = () => {
     },
   });
 
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const router = useRouter();
   const { update } = useSession();
   const searchParams = useSearchParams();
-  const onSubmit = (values: SignInPayload) => {
-    startTransition(() => {
-      signInWithEmailAndPassword(values).then((data) => {
-        if (data.error) {
-          showErrorToast(data.error);
-        } else {
-          showSuccessToast(data.success);
-          update();
-          router.push(LOGIN_ROUTE);
-        }
-      });
+  const onSubmit = async (values: SignInPayload) => {
+    setIsPending(true);
+    await signInWithEmailAndPassword(values).then((data) => {
+      if (data.error) {
+        showErrorToast(data.error);
+      } else {
+        showSuccessToast(data.success);
+        update();
+        router.push(LOGIN_ROUTE);
+      }
     });
+    setIsPending(false);
   };
 
   return (

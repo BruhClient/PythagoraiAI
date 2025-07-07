@@ -26,35 +26,34 @@ const EditCardForm = ({
   const [updatedFront, setUpdatedFront] = useState(front);
   const [updatedBack, setUpdatedBack] = useState(back);
   const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
+
   const editCard = () => {
     if (!front || !back) {
       showErrorToast("Both Front and Back must be filled");
       return;
     }
+
     if (flipped) {
-      startTransition(() => {
-        const baseKey = ["cards", userId, deckId];
-        const variations = [
-          [...baseKey, null, null],
-          [...baseKey, isAi ? "ai" : "human", null],
-          [...baseKey, isAi ? "ai" : "human", "asc"],
+      const baseKey = ["cards", userId, deckId];
+      const variations = [
+        [...baseKey, null, null],
+        [...baseKey, isAi ? "ai" : "human", null],
+        [...baseKey, isAi ? "ai" : "human", "asc"],
 
-          [...baseKey, null, "asc"],
-        ];
+        [...baseKey, null, "asc"],
+      ];
 
-        for (const key of variations) {
-          updateCardFromPaginatedCache(queryClient, key, {
-            id,
-            back: updatedBack,
-          });
-        }
-        showSuccessToast();
-        updateCard(id, { back: updatedBack }).then((data) => {
-          if (!data) {
-            showErrorToast();
-          }
+      for (const key of variations) {
+        updateCardFromPaginatedCache(queryClient, key, {
+          id,
+          back: updatedBack,
         });
+      }
+      showSuccessToast();
+      updateCard(id, { back: updatedBack }).then((data) => {
+        if (!data) {
+          showErrorToast();
+        }
       });
     } else {
       const baseKey = ["cards", userId, deckId];
@@ -73,12 +72,11 @@ const EditCardForm = ({
         });
       }
       showSuccessToast();
-      startTransition(() => {
-        updateCard(id, { front: updatedFront }).then((data) => {
-          if (!data) {
-            showErrorToast();
-          }
-        });
+
+      updateCard(id, { front: updatedFront }).then((data) => {
+        if (!data) {
+          showErrorToast();
+        }
       });
     }
   };
@@ -106,7 +104,7 @@ const EditCardForm = ({
         onChange={flipped ? setUpdatedBack : setUpdatedFront}
         placeholder="Enter Text"
       />
-      <Button className="w-full" disabled={isPending} onClick={editCard}>
+      <Button className="w-full" onClick={editCard}>
         Save Changes
       </Button>
     </div>

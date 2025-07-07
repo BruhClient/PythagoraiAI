@@ -6,13 +6,18 @@ import { addCardsToPaginatedCache, cn } from "@/lib/utils";
 import { Bot, FileText } from "lucide-react";
 import { Button } from "./ui/button";
 import { useUploadThing } from "@/lib/uploadthing";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import {
+  showErrorToast,
+  showLoadingToast,
+  showSuccessToast,
+} from "@/lib/toast";
 import { deleteFileFromUploadthing } from "@/server/actions/uploadthing";
 import { addAiCards, generateFlashcards } from "@/server/actions/openai";
 import { useQueryClient } from "@tanstack/react-query";
 import FeedLoader from "./FeedLoader";
 import { canCreateGeneration } from "@/server/actions/permission";
 import { Slider } from "./ui/slider";
+import { toast } from "sonner";
 
 const PDFDropzone = ({ deckId }: { deckId: string }) => {
   const [file, setFile] = useState<File | null>(null);
@@ -31,102 +36,103 @@ const PDFDropzone = ({ deckId }: { deckId: string }) => {
     maxFiles: 1,
   });
   const { startUpload } = useUploadThing("pdfUploader");
-  const [isPending, startTransition] = useTransition();
-  const [loadingPhase, setLoadingPhase] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
+
   const [input, setInput] = useState<number[]>([50]);
   const queryClient = useQueryClient();
   const createCards = async () => {
-    setLoadingPhase("Uploading File...");
     let fileKey: string | null = null;
-    startTransition(async () => {
-      try {
-        // Upload File
-        const data = await canCreateGeneration(deckId);
-        if (!data.permission) {
-          throw Error(data.reason);
-        }
-        const res = await startUpload([file!]);
+    const toastId = showLoadingToast("Generating Cards");
+    try {
+      // Upload File
 
-        if (!res) {
-          throw Error("Faild to upload file");
-        }
-        const { ufsUrl, key } = res[0];
-        fileKey = key;
-        localStorage.setItem(`pdf_key_${key}`, key);
-
-        // Extract PDF Text
-        setLoadingPhase("Extracting PDF Text...");
-        const resp = await fetch("/api/pdf/extract", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: ufsUrl }),
-        });
-
-        const extracted = await resp.json();
-
-        if (!extracted) {
-          throw Error("Failed to extract PDF Text");
-        }
-
-        // Generate Flash Cards
-        setLoadingPhase("Generating Flash cards...");
-        const cards = await generateFlashcards(
-          deckId,
-          extracted.text,
-          ufsUrl,
-          input[0]
-        );
-
-        console.log(cards);
-
-        if (!cards) {
-          throw Error("Failed to generate cards");
-        }
-        setLoadingPhase("Adding Cards to Database...");
-        const updatedCards = await addAiCards(cards, deckId);
-
-        if (!updatedCards) {
-          throw Error("Could not add cards to database");
-        }
-
-        const { userId } = cards[0];
-        const baseKey = ["cards", userId, deckId];
-        const variations = [
-          [...baseKey, null, null],
-          [...baseKey, "ai", null],
-          [...baseKey, "ai", "asc"],
-
-          [...baseKey, null, "asc"],
-        ];
-        for (const key of variations) {
-          addCardsToPaginatedCache(queryClient, key, updatedCards);
-        }
-
-        showSuccessToast();
-      } catch (error: any) {
-        if (fileKey) {
-          deleteFileFromUploadthing(fileKey).then(() => {
-            localStorage.removeItem("pdfKey");
-          });
-        }
-
-        showErrorToast(error.message);
-      } finally {
-        setFile(null);
-        setLoadingPhase(null);
+      setIsPending(true);
+      const data = await canCreateGeneration(deckId);
+      if (!data.permission) {
+        throw Error(data.reason);
       }
-    });
+      const res = await startUpload([file!]);
+
+      if (!res) {
+        throw Error("Faild to upload file");
+      }
+      const { ufsUrl, key } = res[0];
+      fileKey = key;
+      localStorage.setItem(`pdf_key_${key}`, key);
+
+      // Extract PDF Text
+
+      const resp = await fetch("/api/pdf/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: ufsUrl }),
+      });
+
+      const extracted = await resp.json();
+
+      if (!extracted) {
+        throw Error("Failed to extract PDF Text");
+      }
+
+      // Generate Flash Cards
+
+      const cards = await generateFlashcards(
+        deckId,
+        extracted.text,
+        ufsUrl,
+        input[0]
+      );
+
+      if (!cards) {
+        throw Error("Failed to generate cards");
+      }
+
+      const updatedCards = await addAiCards(cards, deckId);
+
+      if (!updatedCards) {
+        throw Error("Could not add cards to database");
+      }
+
+      const { userId } = cards[0];
+      const baseKey = ["cards", userId, deckId];
+      const variations = [
+        [...baseKey, null, null],
+        [...baseKey, "ai", null],
+        [...baseKey, "ai", "asc"],
+
+        [...baseKey, null, "asc"],
+      ];
+      for (const key of variations) {
+        addCardsToPaginatedCache(queryClient, key, updatedCards);
+      }
+
+      showSuccessToast("Cards Created");
+    } catch (error: any) {
+      if (fileKey) {
+        deleteFileFromUploadthing(fileKey).then(() => {
+          localStorage.removeItem("pdfKey");
+        });
+      }
+
+      showErrorToast(error.message);
+    } finally {
+      setFile(null);
+      setIsPending(false);
+
+      toast.dismiss(toastId);
+    }
   };
 
   useEffect(() => {
     const previous_key = localStorage.getItem("pdfKey");
 
-    if (previous_key) {
-      startTransition(() => {
-        deleteFileFromUploadthing(previous_key).then(() => {
-          localStorage.removeItem("pdfKey");
-        });
+    const deleteFileKey = async (previous_key: string) => {
+      await deleteFileFromUploadthing(previous_key).then(() => {
+        localStorage.removeItem("pdfKey");
       });
+    };
+    if (previous_key) {
+      deleteFileKey(previous_key);
     }
   }, []);
 
@@ -175,14 +181,6 @@ const PDFDropzone = ({ deckId }: { deckId: string }) => {
             <Bot />
             Create Flash Cards
           </Button>
-        )}
-
-        {isPending && (
-          <div className="absolute w-full h-full bg-card flex justify-center items-center inset-0 flex-col gap-3">
-            <FeedLoader />
-
-            {loadingPhase}
-          </div>
         )}
       </div>
     </div>

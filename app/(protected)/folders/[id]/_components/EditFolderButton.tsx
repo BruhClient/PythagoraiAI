@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { Ellipsis, Hammer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +33,7 @@ const EditFolderButton = ({
   color: string;
 }) => {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const queryClient = useQueryClient();
   return (
     <DropdownMenu>
@@ -68,35 +68,35 @@ const EditFolderButton = ({
           dialogDescription="This will permanently delete the folder and all decks/cards inside it."
           variant="destructive"
           onConfirm={() => {
-            startTransition(() => {
-              deleteFolder(id).then((data) => {
-                if (!data) {
-                  showErrorToast();
-                } else {
-                  queryClient.setQueryData(
-                    ["folders", data.userId],
-                    (oldData: any) => {
-                      if (!oldData) {
-                        return oldData;
-                      }
-
-                      return {
-                        ...oldData,
-                        pages: oldData.pages.map((page: any) => ({
-                          ...page,
-                          folders: page.folders.filter(
-                            (item: any) => item.id !== id
-                          ),
-                        })),
-                      };
+            setIsPending(true);
+            deleteFolder(id).then((data) => {
+              if (!data) {
+                showErrorToast();
+              } else {
+                queryClient.setQueryData(
+                  ["folders", data.userId],
+                  (oldData: any) => {
+                    if (!oldData) {
+                      return oldData;
                     }
-                  );
 
-                  showSuccessToast();
-                  router.push("/folders");
-                }
-              });
+                    return {
+                      ...oldData,
+                      pages: oldData.pages.map((page: any) => ({
+                        ...page,
+                        folders: page.folders.filter(
+                          (item: any) => item.id !== id
+                        ),
+                      })),
+                    };
+                  }
+                );
+
+                showSuccessToast();
+                router.push("/folders");
+              }
             });
+            setIsPending(false);
           }}
         >
           <DropdownMenuItem

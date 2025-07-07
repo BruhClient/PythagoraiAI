@@ -37,7 +37,7 @@ const Test = ({
   const [index, setIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [flipped, setFlipped] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const { data: questions = [], isFetching } = useQuery({
     queryKey: ["test", deckId, testType, maxCards],
@@ -100,7 +100,7 @@ const Test = ({
     );
   }
 
-  const handleReview = (quality: number) => {
+  const handleReview = async (quality: number) => {
     setQualities((prev) => [...prev, quality]);
 
     reviewCards({
@@ -134,6 +134,7 @@ const Test = ({
       }
     });
     if (index >= questions.length - 1) {
+      setIsPending(true);
       createReview(
         transformRawScoresToChart([...qualities, quality]),
         deckId,
@@ -161,6 +162,7 @@ const Test = ({
               };
             }
           );
+          setIsPending(false);
         }
       });
 
